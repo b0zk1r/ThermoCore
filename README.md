@@ -1,12 +1,12 @@
 # ThermoCore
 
-Version: 1.0Author: Tunga Kaya (@b0zk1r)
-Release Date: May 14, 2025
-Platform: HP Prime G2
-Language: HP PPL (Prime Programming Language)
-Tested On: HP Prime G2 Firmware 2.2.15270 (2025-01-31)
+- Version: 1.0Author: Tunga Kaya (@b0zk1r)
+- Release Date: May 14, 2025
+- Platform: HP Prime G2
+- Language: HP PPL (Prime Programming Language)
+- Tested On: HP Prime G2 Firmware 2.2.15270 (2025-01-31)
 
-##Description
+## Description
 
 ThermoCore is a modular thermodynamics calculator written in HP PPL for the HP Prime G2 graphing calculator. It is designed to support engineers and students working on various thermodynamic problems. The program integrates multiple calculators and plotting utilities into a single, expandable application.
 
