@@ -80,7 +80,7 @@ Steam property estimations are based on simplified correlations, not full IAPWS 
 
 No persistence of saved data (files not written to permanent memory)
 
-## Deployment Instructions
+## Installation Instructions
 
 Copy ThermoCore.hpprgm to your calculator using HP Connectivity Kit
 
