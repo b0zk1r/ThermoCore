@@ -72,8 +72,6 @@ ThermoCore is a modular thermodynamics calculator written in HP PPL for the HP P
 
 - Stores mock thermodynamic data for demonstration (currently in-memory only)
 
-Known Issues / Notes
-
 ## Limitations:
 
 Steam property estimations are based on simplified correlations, not full IAPWS IF97 tables
