@@ -1,0 +1,964 @@
+// ==============================================
+// Program Name : ThermoCore
+// Version      : 1.0
+// Author       : [b0zk1r] Tunga Kaya
+// Released     : May 14, 2025
+// Platform     : HP Prime G2
+// Language     : HP PPL
+// Description  : All-in-one Thermodynamics Toolkit
+//                Modules include:
+//                - Ideal Gas Law
+//                - Thermodynamic Processes
+//                - Enthalpy, Entropy, Heat Transfer
+//                - Rankine & Refrigeration Cycles
+//                - Steam Tables, Diagrams
+//                - Compressibility (Z-Factor DAK)
+//                - Save/Load Functionality
+// ==============================================
+
+#pragma mode( separator(.,;) integer(h32) )
+
+// ==============================================
+// Thermodynamics Calculator - Complete Program
+// For HP Prime G2 Calculator
+// ==============================================
+
+// Global constants
+EXPORT R          := 8.3145;   // Universal gas constant [J/(mol·K)]
+EXPORT R_air      := 287.058;  // Specific gas constant for dry air [J/(kg·K)]
+EXPORT cp_air     := 1005;     // Specific heat at constant pressure for air [J/(kg·K)]
+EXPORT cv_air     := 718;      // Specific heat at constant volume for air [J/(kg·K)]
+EXPORT gamma_air  := 1.4;      // Heat capacity ratio for air (Cp/Cv) [-]
+EXPORT P_std      := 101325;   // Standard atmospheric pressure [Pa]
+EXPORT T_std      := 273.15;   // Zero Celsius in Kelvin [K]
+EXPORT g          := 9.80665;  // Acceleration due to gravity [m/s^2]
+
+// Main program menu
+EXPORT ThermoCore()
+BEGIN
+  LOCAL choice:=0;
+  
+  WHILE true DO
+    CHOOSE(choice, "Thermodynamics Calculator",
+      "1. Ideal Gas Law",
+      "2. Work in Thermo Processes",
+      "3. Enthalpy Calculator",
+      "4. Thermo Properties",
+      "5. Steam Tables (Lite)",
+      "6. Carnot Efficiency",
+      "7. Heat Transfer Calc",
+      "8. Entropy Change Calc",
+      "9. Rankine Cycle",
+      "10. Refrig & Heat Pumps",
+      "11. Steam Interpolation",
+      "12. Plot T-s & P-v Diagrams",
+      "13. Z-Factor (DAK)",
+      "14. Save/Load Data",
+      "Exit");
+    
+    CASE choice
+    THEN 1 BEGIN IdealGasLaw(); END;
+    THEN 2 BEGIN WorkCalculator(); END;
+    THEN 3 BEGIN EnthalpyCalculator(); END;
+    THEN 4 BEGIN ThermoProperties(); END;
+    THEN 5 BEGIN SteamTablesLite(); END;
+    THEN 6 BEGIN CarnotEfficiency(); END;
+    THEN 7 BEGIN HeatTransfer(); END;
+    THEN 8 BEGIN EntropyChange(); END;
+    THEN 9 BEGIN RankineCycle(); END;
+    THEN 10 BEGIN RefrigerationCycles(); END;
+    THEN 11 BEGIN SteamInterpolation(); END;
+    THEN 12 BEGIN PlotThermoDiagrams(); END;
+    THEN 13 BEGIN ZFACTOR_DAK(); END;
+    THEN 14 BEGIN SaveLoadData(); END;
+    THEN 15 BEGIN RETURN; END;
+    END;
+  END;
+END;
+
+// ===================================
+// 1. Ideal Gas Law Calculator
+// ===================================
+EXPORT IdealGasLaw()
+BEGIN
+  LOCAL choice, P, V, n, T;
+  
+  CHOOSE(choice, "Ideal Gas Law",
+    "Find Pressure (P)", 
+    "Find Volume (V)", 
+    "Find Moles (n)", 
+    "Find Temperature (T)",
+    "Return to Main Menu");
+  
+  IF choice==5 THEN RETURN; END;
+  
+  CASE choice 
+  THEN 1 BEGIN // Find P
+    INPUT({n, V, T}, {"Enter number of moles (mol):", "Enter volume (m³):", 
+          "Enter temperature (K):"}, {"n=", "V=", "T="}, {1, 1, 273});
+    P := (n*R*T)/V;
+    MSGBOX("Result: P = " + P + " Pa");
+  END;
+  THEN 2 BEGIN // Find V
+    INPUT({n, P, T}, {"Enter number of moles (mol):", "Enter pressure (Pa):", 
+          "Enter temperature (K):"}, {"n=", "P=", "T="}, {1, 101325, 273});
+    V := (n*R*T)/P;
+    MSGBOX("Result: V = " + V + " m³");
+  END;
+  THEN 3 BEGIN // Find n
+    INPUT({P, V, T}, {"Enter pressure (Pa):", "Enter volume (m³):", 
+          "Enter temperature (K):"}, {"P=", "V=", "T="}, {101325, 1, 273});
+    n := (P*V)/(R*T);
+    MSGBOX("Result: n = " + n + " mol");
+  END;
+  THEN 4 BEGIN // Find T
+    INPUT({P, V, n}, {"Enter pressure (Pa):", "Enter volume (m³):", 
+          "Enter number of moles (mol):"}, {"P=", "V=", "n="}, {101325, 1, 1});
+    T := (P*V)/(n*R);
+    MSGBOX("Result: T = " + T + " K");
+  END;
+  END;
+END;
+
+// ===================================
+// 2. Work in Thermodynamic Processes
+// ===================================
+EXPORT WorkCalculator()
+BEGIN
+  LOCAL choice, P1, P2, V1, V2, T1, T2, n, γ, W;
+  γ := 1.4; // Default value for diatomic gases (Cp/Cv)
+  
+  CHOOSE(choice, "Work in Thermo Processes",
+    "Isobaric Process (P constant)", 
+    "Isothermal Process (T constant)", 
+    "Adiabatic Process (Q=0)", 
+    "Isochoric Process (V constant)",
+    "Return to Main Menu");
+  
+  IF choice==5 THEN RETURN; END;
+  
+  CASE choice 
+  THEN 1 BEGIN // Isobaric
+    INPUT({P1, V1, V2}, {"Enter constant pressure (Pa):", "Enter initial volume (m³):", 
+          "Enter final volume (m³):"}, {"P=", "V₁=", "V₂="}, {101325, 1, 2});
+    W := P1*(V2-V1);
+    MSGBOX("Work done: W = " + W + " J");
+  END;
+  THEN 2 BEGIN // Isothermal
+    INPUT({n, T1, P1, P2}, {"Enter number of moles (mol):", "Enter constant temperature (K):", 
+          "Enter initial pressure (Pa):", "Enter final pressure (Pa):"},
+          {"n=", "T=", "P₁=", "P₂="}, {1, 300, 101325, 202650});
+    // W = nRT ln(V2/V1) = nRT ln(P1/P2)
+    W := n*R*T1*LN(P1/P2);
+    MSGBOX("Work done: W = " + W + " J");
+  END;
+  THEN 3 BEGIN // Adiabatic
+    INPUT({P1, V1, P2, V2, γ}, {"Enter initial pressure (Pa):", "Enter initial volume (m³):", 
+          "Enter final pressure (Pa):", "Enter final volume (m³):", "Enter heat capacity ratio (γ):"},
+          {"P₁=", "V₁=", "P₂=", "V₂=", "γ="}, {101325, 1, 202650, 0.5, 1.4});
+    // W = (P1*V1 - P2*V2)/(γ-1)
+    W := (P1*V1 - P2*V2)/(γ-1);
+    MSGBOX("Work done: W = " + W + " J");
+  END;
+  THEN 4 BEGIN // Isochoric
+    MSGBOX("In an isochoric process (constant volume), no work is done. W = 0 J");
+  END;
+  END;
+END;
+
+// ===================================
+// 3. Enthalpy Calculator
+// ===================================
+EXPORT EnthalpyCalculator()
+BEGIN
+  LOCAL U, P, V, H;
+  
+  INPUT({U, P, V}, {"Enter internal energy (J):", "Enter pressure (Pa):", 
+        "Enter volume (m³):"}, {"U=", "P=", "V="}, {1000, 101325, 1});
+  
+  H := U + P*V;
+  
+  MSGBOX("Enthalpy: H = " + H + " J");
+END;
+
+// ===================================
+// 4. Thermodynamic Properties
+// ===================================
+EXPORT ThermoProperties()
+BEGIN
+  LOCAL choice, form, p1, p2, T1, T2, h1, h2, s1, s2, v1, v2, units;
+  
+  CHOOSE(choice, "Thermodynamic Properties",
+    "Convert Units",
+    "Calculate Change in Properties",
+    "Return to Main Menu");
+    
+  IF choice==3 THEN RETURN; END;
+  
+  CASE choice
+  THEN 1 BEGIN // Convert Units
+    CHOOSE(form, "Select Property",
+      "Pressure",
+      "Temperature", 
+      "Return");
+      
+    IF form==3 THEN RETURN; END;
+    
+    CASE form
+    THEN 1 BEGIN // Pressure conversion
+      CHOOSE(units, "Convert Pressure",
+        "Pa to Bar",
+        "Bar to Pa",
+        "Pa to atm",
+        "atm to Pa",
+        "Bar to atm",
+        "atm to Bar");
+        
+      INPUT({p1}, {"Enter value to convert:"}, {"Value:"}, {101325});
+      
+      CASE units
+      THEN 1 BEGIN p2 := p1/100000; MSGBOX(p1 + " Pa = " + p2 + " bar"); END;
+      THEN 2 BEGIN p2 := p1*100000; MSGBOX(p1 + " bar = " + p2 + " Pa"); END;
+      THEN 3 BEGIN p2 := p1/101325; MSGBOX(p1 + " Pa = " + p2 + " atm"); END;
+      THEN 4 BEGIN p2 := p1*101325; MSGBOX(p1 + " atm = " + p2 + " Pa"); END;
+      THEN 5 BEGIN p2 := p1/1.01325; MSGBOX(p1 + " bar = " + p2 + " atm"); END;
+      THEN 6 BEGIN p2 := p1*1.01325; MSGBOX(p1 + " atm = " + p2 + " bar"); END;
+      END;
+    END;
+    THEN 2 BEGIN // Temperature conversion
+      CHOOSE(units, "Convert Temperature",
+        "°C to K",
+        "K to °C",
+        "°F to °C",
+        "°C to °F",
+        "°F to K",
+        "K to °F");
+        
+      INPUT({T1}, {"Enter value to convert:"}, {"Value:"}, {25});
+      
+      CASE units
+      THEN 1 BEGIN T2 := T1 + 273.15; MSGBOX(T1 + " °C = " + T2 + " K"); END;
+      THEN 2 BEGIN T2 := T1 - 273.15; MSGBOX(T1 + " K = " + T2 + " °C"); END;
+      THEN 3 BEGIN T2 := (T1-32)*5/9; MSGBOX(T1 + " °F = " + T2 + " °C"); END;
+      THEN 4 BEGIN T2 := T1*9/5+32; MSGBOX(T1 + " °C = " + T2 + " °F"); END;
+      THEN 5 BEGIN T2 := (T1-32)*5/9 + 273.15; MSGBOX(T1 + " °F = " + T2 + " K"); END;
+      THEN 6 BEGIN T2 := (T1-273.15)*9/5+32; MSGBOX(T1 + " K = " + T2 + " °F"); END;
+      END;
+    END;
+    END;
+  END;
+  THEN 2 BEGIN // Calculate Property Changes
+    CHOOSE(form, "Calculate Change",
+      "Enthalpy Change",
+      "Entropy Change",
+      "Specific Volume Change",
+      "Return");
+      
+    IF form==4 THEN RETURN; END;
+    
+    CASE form
+    THEN 1 BEGIN // Enthalpy change
+      INPUT({h1, h2}, {"Enter initial enthalpy (kJ/kg):", "Enter final enthalpy (kJ/kg):"},
+            {"h₁=", "h₂="}, {100, 200});
+      MSGBOX("Enthalpy change: Δh = " + (h2-h1) + " kJ/kg");
+    END;
+    THEN 2 BEGIN // Entropy change
+      INPUT({s1, s2}, {"Enter initial entropy (kJ/kg·K):", "Enter final entropy (kJ/kg·K):"},
+            {"s₁=", "s₂="}, {0.5, 0.8});
+      MSGBOX("Entropy change: Δs = " + (s2-s1) + " kJ/kg·K");
+    END;
+    THEN 3 BEGIN // Specific volume change
+      INPUT({v1, v2}, {"Enter initial specific volume (m³/kg):", "Enter final specific volume (m³/kg):"},
+            {"v₁=", "v₂="}, {0.001, 0.002});
+      MSGBOX("Specific volume change: Δv = " + (v2-v1) + " m³/kg");
+    END;
+    END;
+  END;
+  END;
+END;
+
+// ===================================
+// 5. Steam Tables Lite
+// ===================================
+EXPORT SteamTablesLite()
+BEGIN
+  LOCAL choice, T, P, quality, h, s, v, result;
+  
+  CHOOSE(choice, "Steam Tables (Lite)",
+    "Saturated Water at Temperature",
+    "Saturated Water at Pressure",
+    "Superheated Steam",
+    "Return to Main Menu");
+    
+  IF choice==4 THEN RETURN; END;
+  
+  CASE choice
+  THEN 1 BEGIN // Saturated at T
+    INPUT({T}, {"Enter saturation temperature (°C):"}, {"T="}, {100});
+    
+    // Simplified calculations based on approximate formulas
+    P := 10^(6.834 - 1670.5/(T+233.7)); // Approximated Antoine equation (bar)
+    P := P * 100000; // Convert to Pa
+    
+    CHOOSE(result, "Property to find at T="+T+"°C",
+      "All properties",
+      "Pressure",
+      "Specific enthalpy",
+      "Specific entropy",
+      "Specific volume");
+      
+    // Basic approximations for saturated water at the given temperature
+    h := 4.18*T + T/600; // kJ/kg (liquid)
+    hg := 2500 + 1.8*T;  // kJ/kg (vapor)
+    s := 4.18*LN((T+273.15)/273.15); // kJ/kg·K (liquid)
+    sg := s + 2500/T;  // kJ/kg·K (vapor)
+    v := 0.001 + 0.0000005*T; // m³/kg (liquid)
+    vg := 0.0224*(T+273.15)/P * 100000; // m³/kg (vapor)
+    
+    CASE result
+    THEN 1 BEGIN 
+      MSGBOX("At T=" + T + "°C:" + CHAR(10) +
+             "P = " + P/100000 + " bar" + CHAR(10) + 
+             "h_f = " + h + " kJ/kg, h_g = " + hg + " kJ/kg" + CHAR(10) +
+             "s_f = " + s + " kJ/kg·K, s_g = " + sg + " kJ/kg·K" + CHAR(10) +
+             "v_f = " + v + " m³/kg, v_g = " + vg + " m³/kg");
+    END;
+    THEN 2 BEGIN MSGBOX("Saturation pressure at T=" + T + "°C: P = " + P/100000 + " bar"); END;
+    THEN 3 BEGIN MSGBOX("Specific enthalpy at T=" + T + "°C:" + CHAR(10) + 
+                        "h_f (liquid) = " + h + " kJ/kg" + CHAR(10) + 
+                        "h_g (vapor) = " + hg + " kJ/kg"); END;
+    THEN 4 BEGIN MSGBOX("Specific entropy at T=" + T + "°C:" + CHAR(10) + 
+                        "s_f (liquid) = " + s + " kJ/kg·K" + CHAR(10) + 
+                        "s_g (vapor) = " + sg + " kJ/kg·K"); END;
+    THEN 5 BEGIN MSGBOX("Specific volume at T=" + T + "°C:" + CHAR(10) + 
+                        "v_f (liquid) = " + v + " m³/kg" + CHAR(10) + 
+                        "v_g (vapor) = " + vg + " m³/kg"); END;
+    END;
+  END;
+  THEN 2 BEGIN // Saturated at P
+    INPUT({P}, {"Enter saturation pressure (bar):"}, {"P="}, {1});
+    P := P * 100000; // Convert to Pa
+    
+    // Simplified approximation for saturation temperature
+    T := 100 * (P/101325)^0.25;
+    
+    CHOOSE(result, "Property to find at P=" + P/100000 + " bar",
+      "All properties",
+      "Temperature",
+      "Specific enthalpy",
+      "Specific entropy",
+      "Specific volume");
+      
+    // Basic approximations for saturated water at the given pressure
+    h := 4.18*T + T/600; // kJ/kg (liquid)
+    hg := 2500 + 1.8*T;  // kJ/kg (vapor)
+    s := 4.18*LN((T+273.15)/273.15); // kJ/kg·K (liquid)
+    sg := s + 2500/T;  // kJ/kg·K (vapor)
+    v := 0.001 + 0.0000005*T; // m³/kg (liquid)
+    vg := 0.0224*(T+273.15)/P * 100000; // m³/kg (vapor)
+    
+    CASE result
+    THEN 1 BEGIN 
+      MSGBOX("At P=" + P/100000 + " bar:" + CHAR(10) +
+             "T = " + T + " °C" + CHAR(10) + 
+             "h_f = " + h + " kJ/kg, h_g = " + hg + " kJ/kg" + CHAR(10) +
+             "s_f = " + s + " kJ/kg·K, s_g = " + sg + " kJ/kg·K" + CHAR(10) +
+             "v_f = " + v + " m³/kg, v_g = " + vg + " m³/kg");
+    END;
+    THEN 2 BEGIN MSGBOX("Saturation temperature at P=" + P/100000 + " bar: T = " + T + " °C"); END;
+    THEN 3 BEGIN MSGBOX("Specific enthalpy at P=" + P/100000 + " bar:" + CHAR(10) + 
+                        "h_f (liquid) = " + h + " kJ/kg" + CHAR(10) + 
+                        "h_g (vapor) = " + hg + " kJ/kg"); END;
+    THEN 4 BEGIN MSGBOX("Specific entropy at P=" + P/100000 + " bar:" + CHAR(10) + 
+                        "s_f (liquid) = " + s + " kJ/kg·K" + CHAR(10) + 
+                        "s_g (vapor) = " + sg + " kJ/kg·K"); END;
+    THEN 5 BEGIN MSGBOX("Specific volume at P=" + P/100000 + " bar:" + CHAR(10) + 
+                        "v_f (liquid) = " + v + " m³/kg" + CHAR(10) + 
+                        "v_g (vapor) = " + vg + " m³/kg"); END;
+    END;
+  END;
+  THEN 3 BEGIN // Superheated steam
+    INPUT({P, T}, {"Enter pressure (bar):", "Enter temperature (°C):"},
+          {"P=", "T="}, {1, 200});
+    P := P * 100000; // Convert to Pa
+    
+    // Calculate saturation temperature at this pressure
+    Tsat := 100 * (P/101325)^0.25;
+    
+    IF T <= Tsat THEN
+      MSGBOX("Error: Temperature must be greater than saturation temperature (" + Tsat + "°C) for superheated steam");
+      RETURN;
+    END;
+    
+    // Simplified approximations for superheated steam
+    h := 2500 + 1.8*Tsat + 2*(T-Tsat); // kJ/kg
+    s := 4.18*LN((Tsat+273.15)/273.15) + 2500/Tsat + 2*(T-Tsat)/(T+273.15); // kJ/kg·K
+    v := 0.0224*(T+273.15)/P * 100000; // m³/kg
+    
+    MSGBOX("Superheated Steam Properties:" + CHAR(10) +
+           "P = " + P/100000 + " bar, T = " + T + " °C" + CHAR(10) +
+           "h = " + h + " kJ/kg" + CHAR(10) +
+           "s = " + s + " kJ/kg·K" + CHAR(10) +
+           "v = " + v + " m³/kg");
+  END;
+  END;
+END;
+
+// ===================================
+// 6. Carnot Efficiency Calculator
+// ===================================
+EXPORT CarnotEfficiency()
+BEGIN
+  LOCAL Tc, Th, η;
+  
+  INPUT({Th, Tc}, {"Enter hot reservoir temperature (K):", "Enter cold reservoir temperature (K):"},
+        {"Tₕ=", "Tc="}, {600, 300});
+        
+  IF Tc >= Th THEN
+    MSGBOX("Error: Cold temperature must be less than hot temperature");
+    RETURN;
+  END;
+  
+  η := 1 - Tc/Th;
+  
+  MSGBOX("Carnot Efficiency: η = " + η*100 + "%");
+END;
+
+// ===================================
+// 7. Heat Transfer Calculator
+// ===================================
+EXPORT HeatTransfer()
+BEGIN
+  LOCAL choice, m, c, T1, T2, Q;
+  
+  CHOOSE(choice, "Heat Transfer Q = mcΔT",
+    "Calculate Heat (Q)",
+    "Calculate Mass (m)",
+    "Calculate Specific Heat (c)",
+    "Calculate Temperature Change (ΔT)",
+    "Return to Main Menu");
+    
+  IF choice==5 THEN RETURN; END;
+  
+  CASE choice
+  THEN 1 BEGIN // Find Q
+    INPUT({m, c, T1, T2}, {"Enter mass (kg):", "Enter specific heat capacity (J/kg·K):", 
+          "Enter initial temperature (K):", "Enter final temperature (K):"},
+          {"m=", "c=", "T₁=", "T₂="}, {1, 4186, 293, 373});
+    Q := m*c*(T2-T1);
+    MSGBOX("Heat transfer: Q = " + Q + " J");
+  END;
+  THEN 2 BEGIN // Find m
+    INPUT({Q, c, T1, T2}, {"Enter heat transfer (J):", "Enter specific heat capacity (J/kg·K):", 
+          "Enter initial temperature (K):", "Enter final temperature (K):"},
+          {"Q=", "c=", "T₁=", "T₂="}, {418600, 4186, 293, 373});
+    m := Q/(c*(T2-T1));
+    MSGBOX("Mass: m = " + m + " kg");
+  END;
+  THEN 3 BEGIN // Find c
+    INPUT({Q, m, T1, T2}, {"Enter heat transfer (J):", "Enter mass (kg):", 
+          "Enter initial temperature (K):", "Enter final temperature (K):"},
+          {"Q=", "m=", "T₁=", "T₂="}, {418600, 1, 293, 373});
+    c := Q/(m*(T2-T1));
+    MSGBOX("Specific heat capacity: c = " + c + " J/kg·K");
+  END;
+  THEN 4 BEGIN // Find ΔT
+    INPUT({Q, m, c}, {"Enter heat transfer (J):", "Enter mass (kg):", 
+          "Enter specific heat capacity (J/kg·K):"},
+          {"Q=", "m=", "c="}, {418600, 1, 4186});
+    ΔT := Q/(m*c);
+    MSGBOX("Temperature change: ΔT = " + ΔT + " K");
+  END;
+  END;
+END;
+
+// ===================================
+// 8. Entropy Change Calculator
+// ===================================
+EXPORT EntropyChange()
+BEGIN
+  LOCAL choice, n, m, cp, cv, R_specific, T1, T2, V1, V2, P1, P2, ΔS;
+  
+  CHOOSE(choice, "Entropy Change Calculation",
+    "Entropy Change: Constant Pressure",
+    "Entropy Change: Constant Volume",
+    "Entropy Change: Isothermal Ideal Gas",
+    "Return to Main Menu");
+    
+  IF choice==4 THEN RETURN; END;
+  
+  CASE choice
+  THEN 1 BEGIN // Constant Pressure
+    INPUT({m, cp, T1, T2}, {"Enter mass (kg):", "Enter specific heat capacity at constant pressure (J/kg·K):", 
+          "Enter initial temperature (K):", "Enter final temperature (K):"},
+          {"m=", "cp=", "T₁=", "T₂="}, {1, 1005, 300, 400});
+    ΔS := m*cp*LN(T2/T1);
+    MSGBOX("Entropy change: ΔS = " + ΔS + " J/K");
+  END;
+  THEN 2 BEGIN // Constant Volume
+    INPUT({m, cv, T1, T2}, {"Enter mass (kg):", "Enter specific heat capacity at constant volume (J/kg·K):", 
+          "Enter initial temperature (K):", "Enter final temperature (K):"},
+          {"m=", "cv=", "T₁=", "T₂="}, {1, 718, 300, 400});
+    ΔS := m*cv*LN(T2/T1);
+    MSGBOX("Entropy change: ΔS = " + ΔS + " J/K");
+  END;
+  THEN 3 BEGIN // Isothermal Ideal Gas
+    CHOOSE(choice, "Isothermal Process Method",
+      "Using volume change (V₁ to V₂)",
+      "Using pressure change (P₁ to P₂)",
+      "Return");
+      
+    IF choice==3 THEN RETURN; END;
+    
+    CASE choice
+    THEN 1 BEGIN // Using volume change
+      INPUT({n, V1, V2}, {"Enter number of moles (mol):", "Enter initial volume (m³):", 
+            "Enter final volume (m³):"},
+            {"n=", "V₁=", "V₂="}, {1, 1, 2});
+      ΔS := n*R*LN(V2/V1);
+      MSGBOX("Entropy change: ΔS = " + ΔS + " J/K");
+    END;
+    THEN 2 BEGIN // Using pressure change
+      INPUT({n, P1, P2}, {"Enter number of moles (mol):", "Enter initial pressure (Pa):", 
+            "Enter final pressure (Pa):"},
+            {"n=", "P₁=", "P₂="}, {1, 101325, 50662.5});
+      ΔS := n*R*LN(P1/P2);  // Note the inverse ratio for pressure
+      MSGBOX("Entropy change: ΔS = " + ΔS + " J/K");
+    END;
+    END;
+  END;
+  END;
+END;
+
+// ===================================
+// 9. Rankine Cycle Analysis
+// ===================================
+EXPORT RankineCycle()
+BEGIN
+  LOCAL P_high, P_low, T_high, η_turbine, η_pump, h1, h2, h3, h4, w_turbine, w_pump, q_in, η_cycle;
+  
+  INPUT({P_high, P_low, T_high, η_turbine, η_pump}, 
+        {"Enter boiler pressure (bar):", "Enter condenser pressure (bar):", 
+         "Enter turbine inlet temperature (°C):", "Enter turbine isentropic efficiency:", 
+         "Enter pump isentropic efficiency:"},
+        {"P_high=", "P_low=", "T_high=", "η_turbine=", "η_pump="}, 
+        {60, 0.08, 500, 0.85, 0.75});
+        
+  // Convert to proper units
+  P_high := P_high * 100000; // bar to Pa
+  P_low := P_low * 100000;   // bar to Pa
+  
+  // Calculate saturation properties at condenser pressure (state 1)
+  T_sat_low := 100 * (P_low/101325)^0.25;
+  h1 := 4.18*T_sat_low + T_sat_low/600; // Approximated saturated liquid enthalpy (kJ/kg)
+  s1 := 4.18*LN((T_sat_low+273.15)/273.15); // Approximated saturated liquid entropy (kJ/kg·K)
+  
+  // State 2: After pump (isentropic process would have s2s = s1)
+  v1 := 0.001; // Approximate specific volume of saturated water (m³/kg)
+  w_pump_ideal := v1*(P_high-P_low)/1000; // kJ/kg
+  w_pump := w_pump_ideal/η_pump;
+  h2 := h1 + w_pump;
+  
+  // State 3: After boiler (superheated steam)
+  // Using simplified correlation for superheated steam
+  T_sat_high := 100 * (P_high/101325)^0.25;
+  h3 := 2500 + 1.8*T_sat_high + 2*(T_high-T_sat_high); // kJ/kg
+  s3 := 4.18*LN((T_sat_high+273.15)/273.15) + 2500/T_sat_high + 2*(T_high-T_sat_high)/(T_high+273.15); // kJ/kg·K
+  
+  // State 4: After turbine (using efficiency)
+  // Approximate isentropic enthalpy drop
+  h4s := 2500 + 1.8*T_sat_low; // Approximated saturated vapor enthalpy at low pressure (kJ/kg)
+  w_turbine_ideal := h3 - h4s;
+  w_turbine := w_turbine_ideal * η_turbine;
+  h4 := h3 - w_turbine;
+  
+  // Calculate cycle performance
+  q_in := h3 - h2;
+  η_cycle := (w_turbine - w_pump)/q_in;
+  
+  MSGBOX("Rankine Cycle Analysis:" + CHAR(10) +
+         "State 1 (saturated liquid): h₁ = " + h1 + " kJ/kg" + CHAR(10) +
+         "State 2 (after pump): h₂ = " + h2 + " kJ/kg" + CHAR(10) +
+         "State 3 (superheated): h₃ = " + h3 + " kJ/kg" + CHAR(10) +
+         "State 4 (after turbine): h₄ = " + h4 + " kJ/kg" + CHAR(10) +
+         "Pump work: w_pump = " + w_pump + " kJ/kg" + CHAR(10) +
+         "Turbine work: w_turbine = " + w_turbine + " kJ/kg" + CHAR(10) +
+         "Heat input: q_in = " + q_in + " kJ/kg" + CHAR(10) +
+         "Cycle efficiency: η = " + η_cycle*100 + "%");
+END;
+
+// ===================================
+// 10. Refrigeration & Heat Pump Cycles
+// ===================================
+EXPORT RefrigerationCycles()
+BEGIN
+  LOCAL choice, T_high, T_low, Q_low, W_in, COP_ref, COP_hp;
+  
+  CHOOSE(choice, "Refrigeration & Heat Pump Cycles",
+    "Ideal Refrigeration Cycle",
+    "Ideal Heat Pump Cycle",
+    "Real Cycle Performance",
+    "Return to Main Menu");
+    
+  IF choice==4 THEN RETURN; END;
+  
+  CASE choice
+  THEN 1 BEGIN // Ideal Refrigeration
+    INPUT({T_high, T_low}, {"Enter high temperature (K):", "Enter low temperature (K):"},
+          {"T_high=", "T_low="}, {308, 273});
+          
+    IF T_low >= T_high THEN
+      MSGBOX("Error: Low temperature must be less than high temperature");
+      RETURN;
+    END;
+    
+    COP_ref := T_low/(T_high-T_low);
+    MSGBOX("Ideal Refrigeration COP = " + COP_ref);
+  END;
+  THEN 2 BEGIN // Ideal Heat Pump
+    INPUT({T_high, T_low}, {"Enter high temperature (K):", "Enter low temperature (K):"},
+          {"T_high=", "T_low="}, {308, 273});
+          
+    IF T_low >= T_high THEN
+      MSGBOX("Error: Low temperature must be less than high temperature");
+      RETURN;
+    END;
+    
+    COP_hp := T_high/(T_high-T_low);
+    MSGBOX("Ideal Heat Pump COP = " + COP_hp);
+  END;
+  THEN 3 BEGIN // Real Cycle
+    INPUT({Q_low, W_in}, {"Enter heat absorbed (kJ):", "Enter work input (kJ):"},
+          {"Q_low=", "W_in="}, {10, 3});
+          
+    COP_ref := Q_low/W_in;
+    COP_hp := 1 + COP_ref;
+    
+    MSGBOX("Refrigeration COP = " + COP_ref + CHAR(10) +
+           "Heat Pump COP = " + COP_hp);
+  END;
+  END;
+END;
+
+// ===================================
+// 11. Steam Table Interpolation Tool
+// ===================================
+EXPORT SteamInterpolation()
+BEGIN
+  LOCAL choice, x1, x2, y1, y2, x, y;
+  
+  CHOOSE(choice, "Steam Table Interpolation",
+    "Linear Interpolation",
+    "Return to Main Menu");
+    
+  IF choice==2 THEN RETURN; END;
+  
+  INPUT({x1, y1, x2, y2, x}, 
+        {"Enter lower value (x₁):", "Enter property at x₁:", 
+         "Enter upper value (x₂):", "Enter property at x₂:", 
+         "Enter target value (x):"},
+        {"x₁=", "y₁=", "x₂=", "y₂=", "x="}, 
+        {100, 2676, 120, 2716, 110});
+        
+  // Linear interpolation: y = y1 + (y2-y1)*(x-x1)/(x2-x1)
+  y := y1 + (y2-y1)*(x-x1)/(x2-x1);
+  
+  MSGBOX("Interpolated value at x = " + x + ":" + CHAR(10) +
+         "y = " + y);
+END;
+
+// ===================================
+// 12. T-s and P-v Diagram Plotting
+// ===================================
+EXPORT PlotThermoDiagrams()
+BEGIN
+  LOCAL choice, plotType, x_min, x_max, y_min, y_max, numPoints;
+  
+  CHOOSE(choice, "Thermo Diagram Plotting",
+    "T-s Diagram",
+    "P-v Diagram",
+    "Return to Main Menu");
+    
+  IF choice==3 THEN RETURN; END;
+  
+  // Set number of points to plot
+  numPoints := 50;
+  
+  CASE choice
+  THEN 1 BEGIN // T-s Diagram
+    CHOOSE(plotType, "T-s Diagram Type",
+      "Saturated Water/Steam Dome",
+      "Isobaric Process",
+      "Isothermal Process",
+      "Return");
+      
+    IF plotType==4 THEN RETURN; END;
+    
+    // Initialize plot
+    STARTAPP("Function");
+    RECT(-0.5, 10, 250, 650);
+    AXES(1, 1, 0, 0, 1, 1, 0);
+    LABEL("s (kJ/kg·K)", "T (°C)");
+    
+    CASE plotType
+    THEN 1 BEGIN // Saturated Dome
+      // Calculate and plot saturation curve
+      FOR i FROM 0 TO numPoints DO
+        T := 0.01 + i*(374.15-0.01)/numPoints; // From 0.01°C to critical point (374.15°C)
+        P := 10^(6.834 - 1670.5/(T+233.7)) * 100000; // Approx saturation pressure (Pa)
+        
+        // Approximated entropy values at saturation
+        s_f := 4.18*LN((T+273.15)/273.15); // kJ/kg·K (liquid)
+        s_g := s_f + 2500/(T+273.15);  // kJ/kg·K (vapor)
+        
+        // Plot liquid and vapor saturation points
+        IF i > 0 THEN
+          LINE_P(prev_s_f, prev_T, s_f, T);
+          LINE_P(prev_s_g, prev_T, s_g, T);
+        END;
+        
+        prev_s_f := s_f;
+        prev_s_g := s_g;
+        prev_T := T;
+      END;
+      
+      // Connect top of dome at critical point
+      LINE_P(prev_s_f, prev_T, prev_s_g, prev_T);
+      
+      WAIT;
+    END;
+    THEN 2 BEGIN // Isobaric Process
+      INPUT({P}, {"Enter pressure for isobaric process (bar):"}, {"P="}, {1});
+      P := P * 100000; // Convert to Pa
+      
+      // Calculate saturation temperature at this pressure
+      T_sat := 100 * (P/101325)^0.25;
+      
+      // Calculate and plot 
+      FOR i FROM 0 TO numPoints DO
+        T := 0.01 + i*(300)/numPoints; // Temperature range
+        
+        // Approximate entropy for given P and T
+        IF T < T_sat THEN
+          // Compressed liquid (approximate as saturated)
+          s := 4.18*LN((T+273.15)/273.15); // kJ/kg·K
+        ELSE
+          // Superheated vapor
+          s := 4.18*LN((T_sat+273.15)/273.15) + 2500/(T_sat+273.15) + 0.022*LN((T+273.15)/(T_sat+273.15)); // kJ/kg·K (approximate)
+        END;
+        
+        IF i > 0 THEN
+          LINE_P(prev_s, prev_T, s, T);
+        END;
+        
+        prev_s := s;
+        prev_T := T;
+      END;
+      
+      WAIT;
+    END;
+    THEN 3 BEGIN // Isothermal Process
+      INPUT({T}, {"Enter temperature for isothermal process (°C):"}, {"T="}, {200});
+      
+      // Calculate entropy range for this temperature
+      s_min := 4.18*LN((T+273.15)/273.15); // Approximate liquid entropy
+      s_max := s_min + 10; // Just an arbitrary range
+      
+      // Draw horizontal line
+      LINE_P(s_min, T, s_max, T);
+      
+      WAIT;
+    END;
+    END;
+  END;
+  THEN 2 BEGIN // P-v Diagram
+    CHOOSE(plotType, "P-v Diagram Type",
+      "Saturated Water/Steam Dome",
+      "Isothermal Process",
+      "Isentropic Process",
+      "Return");
+      
+    IF plotType==4 THEN RETURN; END;
+    
+    // Initialize plot with log scale for pressure
+    STARTAPP("Function");
+    RECT(0.0001, 10, 0, 100);
+    AXES(1, 1, 0, 0, 1, 1, 0);
+    LABEL("v (m³/kg)", "P (bar)");
+    
+    CASE plotType
+    THEN 1 BEGIN // Saturated Dome
+      // Calculate and plot saturation curve
+      FOR i FROM 0 TO numPoints DO
+        T := 0.01 + i*(374.15-0.01)/numPoints; // From 0.01°C to critical point
+        P := 10^(6.834 - 1670.5/(T+233.7)); // Approx saturation pressure (bar)
+        
+        // Approximated specific volumes at saturation
+        v_f := 0.001 + 0.0000005*T; // m³/kg (liquid)
+        v_g := 0.0224*(T+273.15)/(P*100000) * 100000; // m³/kg (vapor)
+        
+        // Plot liquid and vapor saturation points
+        IF i > 0 THEN
+          LINE_P(prev_v_f, prev_P, v_f, P);
+          LINE_P(prev_v_g, prev_P, v_g, P);
+        END;
+        
+        prev_v_f := v_f;
+        prev_v_g := v_g;
+        prev_P := P;
+      END;
+      
+      // Connect top of dome at critical point
+      LINE_P(prev_v_f, prev_P, prev_v_g, prev_P);
+      
+      WAIT;
+    END;
+    THEN 2 BEGIN // Isothermal Process
+      INPUT({T}, {"Enter temperature for isothermal process (°C):"}, {"T="}, {200});
+      
+      T_K := T + 273.15; // Convert to Kelvin
+      
+      // For ideal gas: PV = mRT
+      // For fixed temperature and mass: P*v = constant
+      
+      FOR i FROM 0 TO numPoints DO
+        v := 0.01 + i*5/numPoints; // Specific volume range
+        P := 0.082*T_K/v; // Ideal gas equation in bar*m³/(kg*K)
+        
+        IF i > 0 THEN
+          LINE_P(prev_v, prev_P, v, P);
+        END;
+        
+        prev_v := v;
+        prev_P := P;
+      END;
+      
+      WAIT;
+    END;
+    THEN 3 BEGIN // Isentropic Process
+      INPUT({γ}, {"Enter heat capacity ratio (γ=Cp/Cv):"}, {"γ="}, {1.4});
+      
+      // For isentropic process: P*v^γ = constant
+      P_ref := 1; // Reference pressure in bar
+      v_ref := 1; // Reference specific volume in m³/kg
+      constant := P_ref*v_ref^γ;
+      
+      FOR i FROM 0 TO numPoints DO
+        v := 0.1 + i*5/numPoints; // Specific volume range
+        P := constant/v^γ; // P*v^γ = constant
+        
+        IF i > 0 THEN
+          LINE_P(prev_v, prev_P, v, P);
+        END;
+        
+        prev_v := v;
+        prev_P := P;
+      END;
+      
+      WAIT;
+    END;
+    END;
+  END;
+  END;
+END;
+
+// ===================================
+// 13. Z-Factor (DAK) Calculator
+// ===================================
+EXPORT ZFACTOR_DAK()
+BEGIN
+  LOCAL Pr, Tr, rho, rho_old, i, f, df, Z;
+  // 1) Get reduced pressure and reduced temperature
+  INPUT({Pr, Tr}, "Z-Factor (DAK)", 
+        {"Reduced Pressure, Pᵣ", "Reduced Temperature, Tᵣ"});
+  // 2) Initial guess (ideal gas approximation)
+  rho := Pr / Tr;
+  // 3) DAK correlation coefficients
+  LOCAL a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11;
+  a1:=0.3265;   a2:=-1.0700;  a3:=-0.5339;
+  a4:=0.01569;  a5:=-0.05165; a6:=0.5475;
+  a7:=-0.7361;  a8:=0.1844;   a9:=0.1056;
+  a10:=0.6134;  a11:=0.7210;
+  // 4) Solve for rho via Newton–Raphson
+  FOR i FROM 1 TO 20 DO
+    f := rho
+      + a1*rho^2 + a2*rho^6
+      + a3*rho^3*(1 + a4*rho^2)*exp(-a5*rho^2)
+      + a6*rho^2/Tr^2 + a7*rho^5/Tr^2
+      + a8*rho^2/Tr^3 + a9*rho^5/Tr^3
+      + a10*rho^2/Tr^4 + a11*rho^5/Tr^4
+      - Pr;
+    df := 1
+      + 2*a1*rho + 6*a2*rho^5
+      + a3*(3*rho^2*(1 + a4*rho^2) + rho^3*2*a4*rho)*exp(-a5*rho^2)
+      + a3*rho^3*(1 + a4*rho^2)*(-2*a5*rho)*exp(-a5*rho^2)
+      + 2*a6*rho/Tr^2 + 5*a7*rho^4/Tr^2
+      + 2*a8*rho/Tr^3 + 5*a9*rho^4/Tr^3
+      + 2*a10*rho/Tr^4 + 5*a11*rho^4/Tr^4;
+    rho_old := rho;
+    rho := rho_old - f/df;
+    IF abs(rho - rho_old) < 1e-7 THEN BREAK; END;
+  END;
+  // 5) Compute and display Z
+  Z := Pr / (rho * Tr);
+  MSGBOX("Compressibility Z = " + STRING(Z));
+END;
+
+// ===================================
+// 14. Save/Load Data
+// ===================================
+EXPORT SaveLoadData()
+BEGIN
+  LOCAL choice, filename, data, loaded;
+  
+  CHOOSE(choice, "Save/Load Data",
+    "Save Current Data",
+    "Load Saved Data",
+    "Return to Main Menu");
+    
+  IF choice==3 THEN RETURN; END;
+  
+  CASE choice
+  THEN 1 BEGIN // Save Data
+    // Create a structure with calculation data
+    INPUT({filename}, {"Enter filename to save:"}, {"Filename:"}, {"thermo_data"});
+    
+    // Sample data - in a real application, you'd collect this from your calculations
+    data := {
+      "P" : 101325,
+      "T" : 298,
+      "V" : 0.025,
+      "n" : 1,
+      "timestamp" : NOW
+    };
+    
+    EXPORT(filename) := data;
+    MSGBOX("Data saved to " + filename);
+  END;
+  THEN 2 BEGIN // Load Data
+    // Load previously saved data
+    INPUT({filename}, {"Enter filename to load:"}, {"Filename:"}, {"thermo_data"});
+    
+    TRY
+      loaded := EVAL(filename);
+      
+      msg := "Loaded data:" + CHAR(10);
+      ITERATE(key, value, loaded) DO
+        msg := msg + key + " = " + value + CHAR(10);
+      END;
+      
+      MSGBOX(msg);
+    EXCEPT
+      MSGBOX("Error: Could not load file " + filename);
+    END;
+  END;
+  END;
+END;
+
+// Helper function for drawing in plots
+EXPORT LINE_P(x1, y1, x2, y2)
+BEGIN
+  LOCAL gr;
+  gr := getgr();
+  gr("LINE", x1, y1, x2, y2);
+END;
