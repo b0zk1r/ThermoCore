@@ -74,9 +74,13 @@ ThermoCore is a modular thermodynamics calculator written in HP PPL for the HP P
 
 ## Limitations:
 
-Steam property estimations are based on simplified correlations, not full IAPWS IF97 tables
+- Steam property estimations are based on simplified correlations, not full IAPWS IF97 tables
 
-No persistence of saved data (files not written to permanent memory)
+- No persistence of saved data (files not written to permanent memory)
+
+- Input prompts do not include units, so you have to keep track of the units of your works. (Will be fixed in future updates)
+
+- Poor error handling (Program doesnt prompt error for negative pressure value etc.)
 
 ## Installation Instructions
 
