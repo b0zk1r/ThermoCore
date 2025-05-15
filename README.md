@@ -1,6 +1,7 @@
 # ThermoCore
 
-- Version: 1.0Author: Tunga Kaya (@b0zk1r)
+- Version: 1.0
+- Author: Tunga Kaya (@b0zk1r)
 - Release Date: May 14, 2025
 - Platform: HP Prime G2
 - Language: HP PPL (Prime Programming Language)
