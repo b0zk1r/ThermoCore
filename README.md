@@ -79,7 +79,7 @@ ThermoCore is a modular thermodynamics calculator written in HP PPL for the HP P
 
 - No persistence of saved data (files not written to permanent memory)
 
-- Input prompts do not include units, so you have to keep track of the units of your works. (Will be fixed in future updates)
+- Input prompts do not include units, so you have to keep track of the units of your works. (Can be fixed in future updates, but depends on my laziness)
 
 - Poor error handling (Program doesnt prompt error for negative pressure value etc.)
 
