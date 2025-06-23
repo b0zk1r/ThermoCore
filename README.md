@@ -5,7 +5,7 @@
 - Release Date: May 14, 2025
 - Platform: HP Prime G2
 - Language: HP PPL (Prime Programming Language)
-- Tested On: HP Prime G2 Firmware 2.2.15270 (2025-01-31)
+- Tested On: HP Prime G2 Firmware 2.2.15270 (26-03-2025)
 
 ## Description
 
