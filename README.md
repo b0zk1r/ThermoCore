@@ -81,7 +81,7 @@ ThermoCore is a modular thermodynamics calculator written in HP PPL for the HP P
 
 - Input prompts do not include units, so you have to keep track of the units of your works. (Can be fixed in future updates, but depends on my laziness)
 
-- Poor error handling (Program doesnt prompt error for negative pressure value etc.)
+- Poor error handling (Program doesnt prompt error for negative absolute pressure value etc.)
 
 ## Installation Instructions
 
